@@ -35,8 +35,8 @@ const parseBody = ({ body, ...req }) => {
 
 const verifySignature = async ({ payload, signature = '' }) => {
   try {
-    const configResposne = await fetch(TRAVIS_CONFIG_URL);
-    const publicKey = ((((await configResposne.json() || {}).config || {})
+    const configResponse = await fetch(TRAVIS_CONFIG_URL);
+    const publicKey = ((((await configResponse.json() || {}).config || {})
       .notifications || {}).webhook || {}).public_key;
 
     return crypto
@@ -44,6 +44,7 @@ const verifySignature = async ({ payload, signature = '' }) => {
       .update(payload)
       .verify(publicKey, Buffer.from(signature, 'base64'));
   } catch (e) {
+    console.error(e);
     return false;
   }
 };
@@ -72,7 +73,7 @@ const postMessage = async ({
     : `<font color="${color}">Build <a href="${build_url}">#${number}</a></font> (<a href="${compare_url}">${commit}</a>) of ${
       repositorySlug}@${branch} by ${author_name} ${state} in ${duration} seconds`;
 
-  await fetch({
+  const response = await fetch({
     method: 'POST',
     url: WEBHOOK_URL,
     body: JSON.stringify({
@@ -93,13 +94,18 @@ const postMessage = async ({
       ],
     }),
   });
+
+  console.log(await response.json());
 };
 
 exports.handler = async (req) => {
+  console.log(WEBHOOK_URL);
+  console.log(TRAVIS_CONFIG_URL);
   const { headers: { signature } } = req;
   const { payload } = parseBody(req);
 
   if (!payload || !await verifySignature({ payload, signature })) {
+    console.log(await verifySignature({ payload, signature }));
     return {
       statusCode: 200,
       body: '',
