@@ -76,6 +76,8 @@ const postMessage = async ({
     : `<font color="${color}">Build <a href="${build_url}">#${number}</a></font> (<a href="${compare_url}">${commit}</a>) of ${
       repositorySlug}@${branch} by ${author_name} ${state} in ${duration} seconds`;
 
+  console.log(WEBHOOK_URL);
+
   await fetch({
     method: 'POST',
     url: WEBHOOK_URL,
