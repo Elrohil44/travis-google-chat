@@ -13,11 +13,6 @@ const TYPES = {
   JSON: 'json',
 };
 
-const relativeTimeFormat = new Intl.RelativeTimeFormat('en', {
-  numeric: 'auto',
-  style: 'short',
-});
-
 const parseBody = ({ body, ...req }) => {
   try {
     switch (typeis(req, [
@@ -41,8 +36,8 @@ const parseBody = ({ body, ...req }) => {
 const verifySignature = async ({ payload, signature = '' }) => {
   try {
     const configResposne = await fetch(TRAVIS_CONFIG_URL);
-    const publicKey = (await configResposne.json())?.config
-      ?.notifications?.webhook?.public_key;
+    const publicKey = ((((await configResposne.json() || {}).config || {})
+      .notifications || {}).webhook || {}).public_key;
 
     return crypto
       .createVerify('sha1')
@@ -73,9 +68,9 @@ const postMessage = async ({
   const message = type === 'pull_request'
     ? `<font color="${color}">Build <a href="${build_url}">#${number}</a></font> (<a href="${compare_url}">${commit}</a>) of ${
       repositorySlug}@${branch} in PR <a href="${pull_request_url}">#${pull_request_number} <b>${pull_request_title}</b></a>`
-    + ` by ${author_name} ${state} in ${relativeTimeFormat.format(duration, 'second')}`
+    + ` by ${author_name} ${state} in ${duration} seconds`
     : `<font color="${color}">Build <a href="${build_url}">#${number}</a></font> (<a href="${compare_url}">${commit}</a>) of ${
-      repositorySlug}@${branch} by ${author_name} ${state} in ${relativeTimeFormat.format(duration, 'second')}`;
+      repositorySlug}@${branch} by ${author_name} ${state} in ${duration} seconds`;
 
   await fetch({
     method: 'POST',
