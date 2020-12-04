@@ -67,7 +67,7 @@ const postMessage = async ({
   number, type, state, build_url, compare_url,
   commit, author_name, pull_request_number,
   pull_request_title, branch, duration, pull_request_url,
-}, { 'Travis-Repo-Slug': repositorySlug }) => {
+}, { 'travis-repo-slug': repositorySlug }) => {
   const color = getColor(state);
   const message = type === 'pull_request'
     ? `<font color="${color}">Build <a href="${build_url}">#${number}</a></font> (<a href="${compare_url}">${commit}</a>) of ${
