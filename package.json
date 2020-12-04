@@ -1,0 +1,12 @@
+{
+  "name": "travis-google-chat",
+  "version": "0.1.0",
+  "main": "functions/travis-webhook.js",
+  "repository": "https://github.com/Elrohil44/travis-google-chat.git",
+  "author": "Wiesław Stanek",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^7.14.0",
+    "eslint-config-airbnb-base": "^14.2.1"
+  }
+}
