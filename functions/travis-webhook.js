@@ -81,6 +81,12 @@ const postMessage = async ({
     body: JSON.stringify({
       cards: [
         {
+          header: {
+            title: 'Travis CI',
+            subtitle: `Build #${number} of ${repositorySlug}@${branch} ${state}`,
+            imageUrl: 'https://travis-ci.org/images/logos/TravisCI-Mascot-1.png',
+            imageStyle: 'IMAGE',
+          },
           sections: [
             {
               widgets: [
@@ -88,6 +94,44 @@ const postMessage = async ({
                   textParagraph: {
                     text: message,
                   },
+                },
+              ],
+            },
+            {
+              widgets: [
+                {
+                  buttons: [
+                    {
+                      textButton: {
+                        text: 'Show build',
+                        onClick: {
+                          openLink: {
+                            url: build_url,
+                          },
+                        },
+                      },
+                    },
+                    ...(pull_request_url ? {
+                      textButton: {
+                        text: 'Show PR',
+                        onClick: {
+                          openLink: {
+                            url: pull_request_url,
+                          },
+                        },
+                      },
+                    } : {}),
+                    {
+                      textButton: {
+                        text: 'Commit info',
+                        onClick: {
+                          openLink: {
+                            url: compare_url,
+                          },
+                        },
+                      },
+                    },
+                  ],
                 },
               ],
             },
@@ -99,9 +143,11 @@ const postMessage = async ({
 };
 
 exports.handler = async (req) => {
+  console.log(JSON.stringify(req.body));
+  console.log(JSON.stringify(req.headers));
   const { headers: { signature } } = req;
   const { payload } = parseBody(req);
-
+  console.log(parseBody(req));
   if (!payload || !await verifySignature({ payload, signature })) {
     return {
       statusCode: 200,
