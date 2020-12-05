@@ -66,10 +66,10 @@ const postMessage = async ({
 }, { 'travis-repo-slug': repositorySlug }) => {
   const color = getColor(state);
   const message = type === 'pull_request'
-    ? `<font color="${color}">Build <a href="${build_url}">#${number}</a></font> (<a href="${compare_url}">${commit}</a>) of ${
+    ? `<font color="${color}">Build <a href="${build_url}">#${number}</a></font> (<a href="${compare_url}">${commit.substr(0, 8)}</a>) of ${
       repositorySlug}@${branch} in PR <a href="${pull_request_url}">#${pull_request_number} <b>${pull_request_title}</b></a>`
     + ` by ${author_name} ${state} in ${duration} seconds`
-    : `<font color="${color}">Build <a href="${build_url}">#${number}</a></font> (<a href="${compare_url}">${commit}</a>) of ${
+    : `<font color="${color}">Build <a href="${build_url}">#${number}</a></font> (<a href="${compare_url}">${commit.substr(0, 8)}</a>) of ${
       repositorySlug}@${branch} by ${author_name} ${state} in ${duration} seconds`;
 
   await fetch(WEBHOOK_URL, {
