@@ -5,7 +5,7 @@ const { parse } = require('qs');
 
 const {
   WEBHOOK_URL,
-  TRAVIS_CONFIG_URL = 'https://api.travis-ci.org/config',
+  TRAVIS_CONFIG_URL = 'https://api.travis-ci.com/config',
 } = process.env;
 
 const TYPES = {
@@ -38,10 +38,6 @@ const verifySignature = async ({ payload, signature = '' }) => {
     const configResponse = await fetch(TRAVIS_CONFIG_URL);
     const publicKey = ((((await configResponse.json() || {}).config || {})
       .notifications || {}).webhook || {}).public_key;
-
-    console.log(signature);
-    console.log(payload);
-    console.log(publicKey);
 
     return crypto
       .createVerify('sha1')
@@ -83,7 +79,7 @@ const postMessage = async ({
         {
           header: {
             title: 'Travis CI',
-            subtitle: `Build #${number} of ${repositorySlug}@${branch} ${state}`,
+            subtitle: `${repositorySlug}@${branch}`,
             imageUrl: 'https://travis-ci.org/images/logos/TravisCI-Mascot-1.png',
             imageStyle: 'IMAGE',
           },
