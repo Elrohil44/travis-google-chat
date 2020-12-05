@@ -6,7 +6,6 @@ const { parse } = require('qs');
 const {
   WEBHOOK_URL,
   TRAVIS_CONFIG_URL = 'https://api.travis-ci.org/config',
-  SKIP_SIG_VERIFICATION,
 } = process.env;
 
 const TYPES = {
@@ -35,18 +34,19 @@ const parseBody = ({ body, ...req }) => {
 };
 
 const verifySignature = async ({ payload, signature = '' }) => {
-  if (SKIP_SIG_VERIFICATION === 'true') {
-    return true;
-  }
   try {
     const configResponse = await fetch(TRAVIS_CONFIG_URL);
     const publicKey = ((((await configResponse.json() || {}).config || {})
       .notifications || {}).webhook || {}).public_key;
 
+    console.log(signature);
+    console.log(payload);
+    console.log(publicKey);
+
     return crypto
       .createVerify('sha1')
       .update(payload)
-      .verify(publicKey, Buffer.from(signature, 'base64'));
+      .verify(publicKey, signature, 'base64');
   } catch (e) {
     return false;
   }
@@ -111,7 +111,7 @@ const postMessage = async ({
                         },
                       },
                     },
-                    ...(pull_request_url ? {
+                    ...(pull_request_url ? [{
                       textButton: {
                         text: 'Show PR',
                         onClick: {
@@ -120,7 +120,7 @@ const postMessage = async ({
                           },
                         },
                       },
-                    } : {}),
+                    }] : []),
                     {
                       textButton: {
                         text: 'Commit info',
@@ -143,11 +143,8 @@ const postMessage = async ({
 };
 
 exports.handler = async (req) => {
-  console.log(JSON.stringify(req.body));
-  console.log(JSON.stringify(req.headers));
   const { headers: { signature } } = req;
   const { payload } = parseBody(req);
-  console.log(parseBody(req));
   if (!payload || !await verifySignature({ payload, signature })) {
     return {
       statusCode: 200,
