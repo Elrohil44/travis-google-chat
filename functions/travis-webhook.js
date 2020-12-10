@@ -65,12 +65,17 @@ const postMessage = async ({
   pull_request_title, branch, duration,
 }, { 'travis-repo-slug': repositorySlug }) => {
   const color = getColor(state);
+  const minutes = Number(Math.floor(duration / 60) || 0).toFixed(0);
+  const seconds = Number(duration % 60).toFixed(0) || 0;
+  const time = minutes
+    ? `in ${minutes} min${seconds ? `${seconds} sec` : ''}`
+    : `in ${seconds} seconds`;
   const message = type === 'pull_request'
-    ? `<b><font color="${color}">Build <a href="${build_url}">#${number}</a></font></b> (<a href="${compare_url}">${commit.substr(0, 8)}</a>) of ${
-      repositorySlug}@${branch} in PR <a href="${compare_url}">#${pull_request_number} <b>${pull_request_title}</b></a>`
-    + ` by ${author_name} ${state} in ${duration} seconds`
-    : `<b><font color="${color}">Build <a href="${build_url}">#${number}</a></font></b> (<a href="${compare_url}">${commit.substr(0, 8)}</a>) of ${
-      repositorySlug}@${branch} by ${author_name} ${state} in ${duration} seconds`;
+    ? `<b><font color="${color}">Build <a href="${build_url}">#${number}</a></font></b> (<a href="${compare_url}">${commit.substr(0, 8)}</a>) of <b>${
+      repositorySlug}@${branch}</b> in <b>PR <a href="${compare_url}">#${pull_request_number} ${pull_request_title}</a></b>`
+    + ` by ${author_name} ${state} ${time}`
+    : `<b><font color="${color}">Build <a href="${build_url}">#${number}</a></font></b> (<a href="${compare_url}">${commit.substr(0, 8)}</a>) of <b>${
+      repositorySlug}@${branch}</b> by ${author_name} ${state} ${time}`;
 
   await fetch(WEBHOOK_URL, {
     method: 'POST',
