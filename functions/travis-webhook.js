@@ -62,14 +62,14 @@ const getColor = (state) => {
 const postMessage = async ({
   number, type, state, build_url, compare_url,
   commit, author_name, pull_request_number,
-  pull_request_title, branch, duration, pull_request_url,
+  pull_request_title, branch, duration,
 }, { 'travis-repo-slug': repositorySlug }) => {
   const color = getColor(state);
   const message = type === 'pull_request'
-    ? `<font color="${color}">Build <a href="${build_url}">#${number}</a></font> (<a href="${compare_url}">${commit.substr(0, 8)}</a>) of ${
-      repositorySlug}@${branch} in PR <a href="${pull_request_url}">#${pull_request_number} <b>${pull_request_title}</b></a>`
+    ? `<b><font color="${color}">Build <a href="${build_url}">#${number}</a></font></b> (<a href="${compare_url}">${commit.substr(0, 8)}</a>) of ${
+      repositorySlug}@${branch} in PR <a href="${compare_url}">#${pull_request_number} <b>${pull_request_title}</b></a>`
     + ` by ${author_name} ${state} in ${duration} seconds`
-    : `<font color="${color}">Build <a href="${build_url}">#${number}</a></font> (<a href="${compare_url}">${commit.substr(0, 8)}</a>) of ${
+    : `<b><font color="${color}">Build <a href="${build_url}">#${number}</a></font></b> (<a href="${compare_url}">${commit.substr(0, 8)}</a>) of ${
       repositorySlug}@${branch} by ${author_name} ${state} in ${duration} seconds`;
 
   await fetch(WEBHOOK_URL, {
@@ -107,19 +107,10 @@ const postMessage = async ({
                         },
                       },
                     },
-                    ...(pull_request_url ? [{
-                      textButton: {
-                        text: 'Show PR',
-                        onClick: {
-                          openLink: {
-                            url: pull_request_url,
-                          },
-                        },
-                      },
-                    }] : []),
                     {
                       textButton: {
-                        text: 'Commit info',
+                        text: type === 'pull_request'
+                          ? 'Show PR' : 'Commit info',
                         onClick: {
                           openLink: {
                             url: compare_url,
