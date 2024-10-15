@@ -6,6 +6,7 @@ const { parse } = require('qs');
 const {
   WEBHOOK_URL,
   TRAVIS_CONFIG_URL = 'https://api.travis-ci.com/config',
+  DEBUG,
 } = process.env;
 
 const TYPES = {
@@ -13,12 +14,22 @@ const TYPES = {
   JSON: 'json',
 };
 
+const isDebug = DEBUG === 'true';
+
+const debug = (...args) => {
+  if (isDebug) {
+    console.log(...args);
+  }
+}
+
 const parseBody = ({ body, ...req }) => {
+  const type = typeis(req, [
+    TYPES.URLENCODED,
+    TYPES.JSON,
+  ]);
+  debug(`Request type: ${type}`);
   try {
-    switch (typeis(req, [
-      TYPES.URLENCODED,
-      TYPES.JSON,
-    ])) {
+    switch (type) {
       case TYPES.URLENCODED: {
         return parse(body);
       }
@@ -29,6 +40,7 @@ const parseBody = ({ body, ...req }) => {
         return {};
     }
   } catch (e) {
+    debug(e);
     return {};
   }
 };
@@ -38,12 +50,14 @@ const verifySignature = async ({ payload, signature = '' }) => {
     const configResponse = await fetch(TRAVIS_CONFIG_URL);
     const publicKey = ((((await configResponse.json() || {}).config || {})
       .notifications || {}).webhook || {}).public_key;
+    debug(publicKey, signature);
 
     return crypto
       .createVerify('sha1')
       .update(payload)
       .verify(publicKey, signature, 'base64');
   } catch (e) {
+    debug(e)
     return false;
   }
 };
@@ -137,7 +151,11 @@ const postMessage = async ({
 exports.handler = async (req) => {
   const { headers: { signature } } = req;
   const { payload } = parseBody(req);
+
+  debug(`Is payload set: ${!!payload}`);
+
   if (!payload || !await verifySignature({ payload, signature })) {
+    debug('Payload missing or invalid signature');
     return {
       statusCode: 200,
       body: '',
